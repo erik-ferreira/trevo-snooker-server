@@ -15,7 +15,9 @@ model Player {
   name       String
   created_at DateTime @default(now())
 
-  matches MatchesOnPlayer[]
+  matches PlayersOnMatches[]
+
+  @@map("players")
 }
 
 model Match {
@@ -24,17 +26,19 @@ model Match {
   is_suicide Boolean
   created_at DateTime @default(now())
 
-  players MatchesOnPlayer[]
+  players PlayersOnMatches[]
+
+  @@map("matches")
 }
 
-model MatchesOnPlayer {
-  match   Match  @relation(fields: [matchId], references: [id])
-  matchId String
+model PlayersOnMatches {
+  match    Match  @relation(fields: [match_id], references: [id])
+  match_id String
 
-  player   Player @relation(fields: [playerId], references: [id])
-  playerId String
+  player    Player @relation(fields: [player_id], references: [id])
+  player_id String
 
-  @@id([matchId, playerId])
+  @@id([match_id, player_id])
+  @@index([match_id])
+  @@index([player_id])
 }
-
-// DATABASE_URL="file:./dev.db"
