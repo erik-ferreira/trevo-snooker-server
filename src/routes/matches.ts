@@ -55,8 +55,6 @@ export async function matchesRoutes(app: FastifyInstance) {
         }
       }
 
-      console.log(error)
-
       reply.code(400).send({ message })
     }
   })
