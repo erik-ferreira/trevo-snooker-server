@@ -7,30 +7,34 @@ interface ParamsProps {
 }
 
 export async function playersRoutes(app: FastifyInstance) {
-  app.get("/players", async (req, reply) => {
-    const players = await prisma.player.findMany()
-
-    return reply.send({ players })
-  })
-
-  app.get("/players/:id", async (request, reply) => {
-    const { id } = request.params as ParamsProps
-
-    if (!id) {
-      return reply.code(400).send({ error: "Id do usuário não encontrado" })
-    }
-
-    const user = await prisma.player.findUniqueOrThrow({
-      where: { id },
-      include: {
-        matches: {
-          include: {
-            match: true,
+  app.get("/players", async (_, reply) => {
+    try {
+      const players = await prisma.player.findMany({
+        orderBy: {
+          name: "asc",
+        },
+        include: {
+          matches: {
+            include: {
+              match: true,
+            },
           },
         },
-      },
-    })
+      })
 
-    return reply.code(201).send({ user })
+      const formatPlayers = players.map((player) => ({
+        id: player.id,
+        name: player.name,
+        slug_avatar: player.slug_avatar,
+        created_at: player.created_at,
+        numberOfMatchesWon: player.matches.length,
+      }))
+
+      return reply.send({ players: formatPlayers })
+    } catch (err) {
+      return reply.send({
+        message: "Não foi possível carregar a lista de jogadores",
+      })
+    }
   })
 }
