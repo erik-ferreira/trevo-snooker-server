@@ -7,20 +7,6 @@ import { createMatchBodySchema } from "../schemas/matches"
 import { prisma } from "../lib/prisma"
 
 export async function matchesRoutes(app: FastifyInstance) {
-  app.get("/matches", async (req, reply) => {
-    const matches = await prisma.match.findMany({
-      include: {
-        players: {
-          include: {
-            player: true,
-          },
-        },
-      },
-    })
-
-    return reply.send({ matches })
-  })
-
   // create match
   app.post("/matches", async (request, reply) => {
     try {
@@ -58,29 +44,22 @@ export async function matchesRoutes(app: FastifyInstance) {
       reply.code(400).send({ message })
     }
   })
+
+  // get all list match dates
+  app.get("/matches/dates", async (_, reply) => {
+    try {
+      const matches = await prisma.match.findMany({
+        select: {
+          id: true,
+          created_at: true,
+        },
+      })
+
+      return reply.send({ matches })
+    } catch (error) {
+      reply
+        .code(400)
+        .send({ message: "Não foi possível carregar as datas das partidas" })
+    }
+  })
 }
-
-// app.post("/matches", async (req, reply) => {
-//   try {
-//     const players = await prisma.player.findMany()
-//     const playersIds = [players[0].id, players[1].id]
-//     // Crie a partida no banco de dados
-//     const match = await prisma.match.create({
-//       data: {
-//         is_capote: false,
-//         is_suicide: false,
-//         winner_player_id: playersIds[1],
-//         players: {
-//           create: playersIds.map((playerId) => ({
-//             player: { connect: { id: playerId } },
-//           })),
-//         },
-//       },
-//       include: { players: true },
-//     })
-
-//     reply.code(201).send(match)
-//   } catch (error) {
-//     reply.code(500).send({ error: "Erro ao criar a partida." })
-//   }
-// })
