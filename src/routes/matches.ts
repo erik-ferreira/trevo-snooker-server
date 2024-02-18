@@ -1,5 +1,8 @@
-import { z, ZodError } from "zod"
+import { Prisma } from "@prisma/client"
+import { ZodError } from "zod"
 import { FastifyInstance } from "fastify"
+
+import { createMatchBodySchema } from "../schemas/matches"
 
 import { prisma } from "../lib/prisma"
 
@@ -21,31 +24,24 @@ export async function matchesRoutes(app: FastifyInstance) {
   // create match
   app.post("/matches", async (request, reply) => {
     try {
-      const createMatchBodySchema = z.object({
-        is_capote: z.boolean({
-          required_error:
-            "Informe se a partida foi vencida através de um capote",
-        }),
-        is_suicide: z.boolean({
-          required_error:
-            "Informe se a partida foi vencida através de um suicídio",
-        }),
-        winner_player_id: z.string({
-          required_error: "Id do jogador que venceu a partida é obrigatório",
-        }),
-        players_ids: z
-          .array(z.string(), {
-            required_error: "Informe os ids dos dois jogadores da partida",
-          })
-          .length(2, "Você precisa informar os dois jogadores da partida"),
-      })
-
       const { is_capote, is_suicide, winner_player_id, players_ids } =
         createMatchBodySchema.parse(request.body)
 
-      reply
-        .code(201)
-        .send({ is_capote, is_suicide, winner_player_id, players_ids })
+      const match = await prisma.match.create({
+        data: {
+          is_capote,
+          is_suicide,
+          winner_player_id,
+          players: {
+            create: players_ids.map((playerId) => ({
+              player: { connect: { id: playerId } },
+            })),
+          },
+        },
+        include: { players: true },
+      })
+
+      reply.code(201).send(match)
     } catch (error) {
       let message = "Não foi possível criar a partida"
 
@@ -53,7 +49,13 @@ export async function matchesRoutes(app: FastifyInstance) {
         console.log("error", JSON.stringify(error, null, 2))
 
         message = error?.issues[0].message
+      } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === "P2025") {
+          message = "Um ou mais jogadores fornecidos não foram encontrados."
+        }
       }
+
+      console.log(error)
 
       reply.code(400).send({ message })
     }
