@@ -7,6 +7,7 @@ interface ParamsProps {
 }
 
 export async function playersRoutes(app: FastifyInstance) {
+  // list players
   app.get("/players", async (_, reply) => {
     try {
       const players = await prisma.player.findMany({
