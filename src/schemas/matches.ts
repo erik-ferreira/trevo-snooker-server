@@ -16,3 +16,17 @@ export const createMatchBodySchema = z.object({
     })
     .length(2, "Você precisa informar os dois jogadores da partida"),
 })
+
+export const getMatchesQuerySchema = z.object({
+  date: z
+    .string()
+    .refine(
+      (value) => {
+        const regex = /^\d{2}\/\d{2}\/\d{4}$/
+
+        return regex.test(value)
+      },
+      { message: "A data está no formato inválido" }
+    )
+    .optional(),
+})

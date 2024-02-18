@@ -2,7 +2,10 @@ import { Prisma } from "@prisma/client"
 import { ZodError } from "zod"
 import { FastifyInstance } from "fastify"
 
-import { createMatchBodySchema } from "../schemas/matches"
+import {
+  createMatchBodySchema,
+  getMatchesQuerySchema,
+} from "../schemas/matches"
 
 import { prisma } from "../lib/prisma"
 
@@ -32,8 +35,6 @@ export async function matchesRoutes(app: FastifyInstance) {
       let message = "Não foi possível criar a partida"
 
       if (error instanceof ZodError) {
-        console.log("error", JSON.stringify(error, null, 2))
-
         message = error?.issues[0].message
       } else if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === "P2025") {
@@ -46,8 +47,22 @@ export async function matchesRoutes(app: FastifyInstance) {
   })
 
   // get all list match dates
-  app.get("/matches/dates", async (_, reply) => {
+  app.get("/matches/dates", async (request, reply) => {
     try {
+      const { date } = getMatchesQuerySchema.parse(request.query)
+
+      // let matches
+
+      if (date) {
+        const matches = await prisma.match.findMany({
+          where: {
+            created_at: "2024-02-18T04:38:35.514Z",
+          },
+        })
+
+        return reply.send({ matches })
+      }
+
       const matches = await prisma.match.findMany({
         select: {
           id: true,
@@ -57,9 +72,14 @@ export async function matchesRoutes(app: FastifyInstance) {
 
       return reply.send({ matches })
     } catch (error) {
-      reply
-        .code(400)
-        .send({ message: "Não foi possível carregar as datas das partidas" })
+      console.log(error)
+      let message = "Não foi possível carregar as datas das partidas"
+
+      if (error instanceof ZodError) {
+        message = error?.issues[0].message
+      }
+
+      reply.code(400).send({ message })
     }
   })
 }
