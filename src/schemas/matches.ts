@@ -28,5 +28,13 @@ export const getMatchesQuerySchema = z.object({
       },
       { message: "A data está no formato inválido" }
     )
+    .transform((value) => {
+      const formatDate = value.split("/").reverse().join("-")
+
+      return {
+        startDate: new Date(`${formatDate}T00:00:00.000Z`),
+        endDate: new Date(`${formatDate}T23:59:59.999Z`),
+      }
+    })
     .optional(),
 })

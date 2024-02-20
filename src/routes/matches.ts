@@ -51,12 +51,13 @@ export async function matchesRoutes(app: FastifyInstance) {
     try {
       const { date } = getMatchesQuerySchema.parse(request.query)
 
-      // let matches
-
       if (date) {
         const matches = await prisma.match.findMany({
           where: {
-            created_at: "2024-02-18T04:38:35.514Z",
+            created_at: {
+              gte: date.startDate,
+              lte: date.endDate,
+            },
           },
         })
 
