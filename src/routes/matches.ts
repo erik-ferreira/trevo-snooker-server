@@ -27,7 +27,6 @@ export async function matchesRoutes(app: FastifyInstance) {
             })),
           },
         },
-        include: { players: true },
       })
 
       reply.code(201).send(match)
@@ -46,35 +45,45 @@ export async function matchesRoutes(app: FastifyInstance) {
     }
   })
 
-  // get all list match dates
-  app.get("/matches/dates", async (request, reply) => {
+  // list off all match dates
+  app.get("/matches/dates", async (_, reply) => {
     try {
-      const { date } = getMatchesQuerySchema.parse(request.query)
-
-      if (date) {
-        const matches = await prisma.match.findMany({
-          where: {
-            created_at: {
-              gte: date.startDate,
-              lte: date.endDate,
-            },
-          },
-        })
-
-        return reply.send({ matches })
-      }
-
-      const matches = await prisma.match.findMany({
+      const matchesPrisma = await prisma.match.findMany({
         select: {
           id: true,
           created_at: true,
         },
       })
 
+      const matches = Array.from(
+        new Set(matchesPrisma.map((match) => match.created_at.toDateString()))
+      ).map((match) => new Date(match))
+
       return reply.send({ matches })
     } catch (error) {
-      console.log(error)
-      let message = "Não foi possível carregar as datas das partidas"
+      reply
+        .code(400)
+        .send({ message: "Não foi possível carregar as datas das partidas" })
+    }
+  })
+
+  // list of all matches on a date
+  app.get("/matches", async (request, reply) => {
+    try {
+      const { date } = getMatchesQuerySchema.parse(request.query)
+
+      const matches = await prisma.match.findMany({
+        where: {
+          created_at: {
+            gte: date?.startDate,
+            lte: date?.endDate,
+          },
+        },
+      })
+
+      return reply.send({ matches })
+    } catch (error) {
+      let message = "Não foi possível carregar as partidas"
 
       if (error instanceof ZodError) {
         message = error?.issues[0].message
