@@ -1,5 +1,6 @@
-import { Prisma } from "@prisma/client"
 import { ZodError } from "zod"
+import { randomUUID } from "crypto"
+import { Prisma } from "@prisma/client"
 import { FastifyInstance } from "fastify"
 
 import {
@@ -45,28 +46,6 @@ export async function matchesRoutes(app: FastifyInstance) {
     }
   })
 
-  // list off all match dates
-  app.get("/matches/dates", async (_, reply) => {
-    try {
-      const matchesPrisma = await prisma.match.findMany({
-        select: {
-          id: true,
-          created_at: true,
-        },
-      })
-
-      const matches = Array.from(
-        new Set(matchesPrisma.map((match) => match.created_at.toDateString()))
-      ).map((match) => new Date(match))
-
-      return reply.send({ matches })
-    } catch (error) {
-      reply
-        .code(400)
-        .send({ message: "Não foi possível carregar as datas das partidas" })
-    }
-  })
-
   // list of all matches on a date
   app.get("/matches", async (request, reply) => {
     try {
@@ -90,6 +69,32 @@ export async function matchesRoutes(app: FastifyInstance) {
       }
 
       reply.code(400).send({ message })
+    }
+  })
+
+  // list off all match dates
+  app.get("/matches/dates", async (_, reply) => {
+    try {
+      const matchesPrismaDates = await prisma.match.findMany({
+        select: {
+          created_at: true,
+        },
+      })
+
+      const convertMatches = matchesPrismaDates.map((match) =>
+        match.created_at.toDateString()
+      )
+
+      const matches = Array.from(new Set(convertMatches)).map((match) => ({
+        id: randomUUID(),
+        created_at: new Date(match),
+      }))
+
+      return reply.send({ matches })
+    } catch (error) {
+      reply
+        .code(400)
+        .send({ message: "Não foi possível carregar as datas das partidas" })
     }
   })
 }
