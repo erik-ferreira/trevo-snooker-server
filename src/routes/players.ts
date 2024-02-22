@@ -2,6 +2,8 @@ import { FastifyInstance } from "fastify"
 
 import { prisma } from "../lib/prisma"
 
+import { calculatePlayersStatistics } from "../utils/calculatePlayersStatistics"
+
 interface ParamsProps {
   id: string
 }
@@ -42,7 +44,7 @@ export async function playersRoutes(app: FastifyInstance) {
   // list players with statistics
   app.get("/players/statistics", async (_, reply) => {
     try {
-      const players = await prisma.player.findMany({
+      const prismaPlayers = await prisma.player.findMany({
         orderBy: {
           name: "asc",
         },
@@ -55,63 +57,9 @@ export async function playersRoutes(app: FastifyInstance) {
         },
       })
 
-      // const formatPlayers = players.map((player) => {
-      //   const statistics = player.matches.reduce(
-      //     (acc, current) => {
-      //       const isPlayerWinner = current.match.winner_player_id === player.id
-      //       const isCapote = current.match.is_capote
-      //       const isSuicide = current.match.is_suicide
-      //       const isMatchNormal =
-      //         !current.match.is_capote && !current.match.is_suicide
-
-      //       if (isPlayerWinner) {
-      //         acc.numberOfMatchesWon++
-
-      //         if (isCapote) acc.numberOfMatchesWonPerCapote++
-      //         if (isSuicide) acc.numberOfMatchesWonPerSuicide++
-      //         if (isMatchNormal) acc.numberOfMatchesWonPerNormal++
-      //       } else {
-      //         acc.numberOfMatchesLose++
-
-      //         if (isCapote) acc.numberOfMatchesLosePerCapote++
-      //         if (isSuicide) acc.numberOfMatchesLosePerSuicide++
-      //         if (isMatchNormal) acc.numberOfMatchesLosePerNormal++
-      //       }
-
-      //       return acc
-      //     },
-      //     {
-      //       numberOfMatchesWon: 0,
-      //       numberOfMatchesLose: 0,
-
-      //       numberOfMatchesWonPerNormal: 0,
-      //       numberOfMatchesLosePerNormal: 0,
-
-      //       numberOfMatchesWonPerCapote: 0,
-      //       numberOfMatchesLosePerCapote: 0,
-
-      //       numberOfMatchesWonPerSuicide: 0,
-      //       numberOfMatchesLosePerSuicide: 0,
-      //     }
-      //   )
-
-      //   let points = 0
-
-      //   points += statistics.numberOfMatchesWonPerCapote * 3
-      //   points += statistics.numberOfMatchesWonPerSuicide * 1
-      //   points += statistics.numberOfMatchesWonPerNormal * 2
-
-      //   points -= statistics.numberOfMatchesLosePerSuicide * 1
-      //   points -= statistics.numberOfMatchesLosePerCapote * 1
-
-      //   return {
-      //     id: player.id,
-      //     name: player.name,
-      //     slug_avatar: player.slug_avatar,
-      //     created_at: player.created_at,
-      //     statistics: { ...statistics, points },
-      //   }
-      // })
+      const players = prismaPlayers.map((player) =>
+        calculatePlayersStatistics(player)
+      )
 
       return reply.send({ players })
     } catch (err) {
