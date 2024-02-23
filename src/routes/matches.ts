@@ -14,16 +14,16 @@ export async function matchesRoutes(app: FastifyInstance) {
   // create match
   app.post("/matches", async (request, reply) => {
     try {
-      const { is_capote, is_suicide, winner_player_id, players_ids } =
+      const { isCapote, isSuicide, winnerPlayerId, playersIds } =
         createMatchBodySchema.parse(request.body)
 
       const match = await prisma.match.create({
         data: {
-          is_capote,
-          is_suicide,
-          winner_player_id,
+          isCapote,
+          isSuicide,
+          winnerPlayerId,
           players: {
-            create: players_ids.map((playerId) => ({
+            create: playersIds.map((playerId) => ({
               player: { connect: { id: playerId } },
             })),
           },
@@ -53,7 +53,7 @@ export async function matchesRoutes(app: FastifyInstance) {
 
       const matches = await prisma.match.findMany({
         where: {
-          created_at: {
+          createdAt: {
             gte: date?.startDate,
             lte: date?.endDate,
           },
@@ -77,12 +77,12 @@ export async function matchesRoutes(app: FastifyInstance) {
     try {
       const matchesPrismaDates = await prisma.match.findMany({
         select: {
-          created_at: true,
+          createdAt: true,
         },
       })
 
       const convertMatches = matchesPrismaDates.map((match) =>
-        match.created_at.toDateString()
+        match.createdAt.toDateString()
       )
 
       const matches = Array.from(new Set(convertMatches)).map((match) => ({

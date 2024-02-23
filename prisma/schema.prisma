@@ -8,10 +8,10 @@ datasource db {
 }
 
 model Player {
-  id          String   @id @default(uuid())
-  name        String
-  slug_avatar String
-  created_at  DateTime @default(now())
+  id         String   @id @default(uuid())
+  name       String
+  slugAvatar String
+  createdAt  DateTime @default(now())
 
   matches PlayersOnMatches[]
 
@@ -19,11 +19,11 @@ model Player {
 }
 
 model Match {
-  id               String   @id @default(uuid())
-  is_capote        Boolean
-  is_suicide       Boolean
-  created_at       DateTime @default(now())
-  winner_player_id String
+  id             String   @id @default(uuid())
+  isCapote       Boolean
+  isSuicide      Boolean
+  createdAt      DateTime @default(now())
+  winnerPlayerId String
 
   players PlayersOnMatches[]
 
@@ -31,13 +31,13 @@ model Match {
 }
 
 model PlayersOnMatches {
-  match    Match  @relation(fields: [match_id], references: [id])
-  match_id String
+  match   Match  @relation(fields: [matchId], references: [id])
+  matchId String
 
-  player    Player @relation(fields: [player_id], references: [id])
-  player_id String
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId String
 
-  @@id([match_id, player_id])
-  @@index([match_id])
-  @@index([player_id])
+  @@id([matchId, playerId])
+  @@index([matchId])
+  @@index([playerId])
 }

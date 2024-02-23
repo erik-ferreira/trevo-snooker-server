@@ -28,8 +28,8 @@ export async function playersRoutes(app: FastifyInstance) {
       const formatPlayers = players.map((player) => ({
         id: player.id,
         name: player.name,
-        slug_avatar: player.slug_avatar,
-        created_at: player.created_at,
+        slugAvatar: player.slugAvatar,
+        createdAt: player.createdAt,
         numberOfMatchesPlayed: player.matches.length,
       }))
 

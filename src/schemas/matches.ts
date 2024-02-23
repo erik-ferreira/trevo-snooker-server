@@ -1,16 +1,16 @@
 import { z } from "zod"
 
 export const createMatchBodySchema = z.object({
-  is_capote: z.boolean({
+  isCapote: z.boolean({
     required_error: "Informe se a partida foi vencida através de um capote",
   }),
-  is_suicide: z.boolean({
+  isSuicide: z.boolean({
     required_error: "Informe se a partida foi vencida através de um suicídio",
   }),
-  winner_player_id: z.string({
+  winnerPlayerId: z.string({
     required_error: "Id do jogador que venceu a partida é obrigatório",
   }),
-  players_ids: z
+  playersIds: z
     .array(z.string(), {
       required_error: "Informe os ids dos dois jogadores da partida",
     })

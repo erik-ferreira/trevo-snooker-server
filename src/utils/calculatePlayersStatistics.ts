@@ -5,11 +5,10 @@ export function calculatePlayersStatistics(
 ): ReturnPlayersStatistics {
   const statistics = prismaPlayer.matches.reduce(
     (acc, current) => {
-      const isPlayerWinner = current.match.winner_player_id === prismaPlayer.id
-      const isCapote = current.match.is_capote
-      const isSuicide = current.match.is_suicide
-      const isMatchNormal =
-        !current.match.is_capote && !current.match.is_suicide
+      const isPlayerWinner = current.match.winnerPlayerId === prismaPlayer.id
+      const isCapote = current.match.isCapote
+      const isSuicide = current.match.isSuicide
+      const isMatchNormal = !current.match.isSuicide && !current.match.isSuicide
 
       if (isPlayerWinner) {
         acc.numberOfMatchesWon++
@@ -55,8 +54,8 @@ export function calculatePlayersStatistics(
   return {
     id: prismaPlayer.id,
     name: prismaPlayer.name,
-    slug_avatar: prismaPlayer.slug_avatar,
-    created_at: prismaPlayer.created_at,
+    slugAvatar: prismaPlayer.slugAvatar,
+    createdAt: prismaPlayer.createdAt,
     statistics: { ...statistics, points },
   }
 }
