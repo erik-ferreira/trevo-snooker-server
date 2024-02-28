@@ -87,7 +87,7 @@ export async function matchesRoutes(app: FastifyInstance) {
 
       const matches = Array.from(new Set(convertMatches)).map((match) => ({
         id: randomUUID(),
-        created_at: new Date(match),
+        createdAt: new Date(match),
       }))
 
       return reply.send({ matches })
