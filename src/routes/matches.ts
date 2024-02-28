@@ -81,8 +81,8 @@ export async function matchesRoutes(app: FastifyInstance) {
         },
       })
 
-      const convertMatches = matchesPrismaDates.map((match) =>
-        match.createdAt.toDateString()
+      const convertMatches = matchesPrismaDates.map(
+        (match) => match.createdAt.toISOString().split("T")[0]
       )
 
       const matches = Array.from(new Set(convertMatches)).map((match) => ({
