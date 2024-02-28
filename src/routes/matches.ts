@@ -58,6 +58,13 @@ export async function matchesRoutes(app: FastifyInstance) {
             lte: date?.endDate,
           },
         },
+        include: {
+          players: {
+            include: {
+              player: true,
+            },
+          },
+        },
       })
 
       return reply.send({ matches })
